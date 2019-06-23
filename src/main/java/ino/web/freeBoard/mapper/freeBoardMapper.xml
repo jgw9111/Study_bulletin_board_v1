@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ino.web.freeBoard.mapper.FreeBoardMapper">
+	
+	
+	<select id="freeBoardGetList" resultType="freeBoardDto"> <!-- resultType="ino.web.board.dto.BoardDto" -->
+		SELECT NUM, TITLE, NAME, TO_CHAR(REGDATE,'YYYY/MM/DD') REGDATE, CONTENT FROM FREEBOARD
+		ORDER BY LPAD( NUM, 5 ) DESC
+	</select>
+	
+	<select id="freeBoardListWithPaging" resultType="freeBoardDto"> <!-- resultType="ino.web.board.dto.BoardDto" -->
+		<![CDATA[
+			SELECT NUM, TITLE, NAME, TO_CHAR(REGDATE,'YYYY/MM/DD') REGDATE, CONTENT
+			FROM (SELECT ROWNUM RRNUM, T.*
+					FROM (SELECT ROWNUM RNUM, C.*
+	            			FROM FREEBOARD C
+	            			ORDER BY RNUM DESC) T
+	            	WHERE ROWNUM <= #{pageNum} * #{amount} )
+			WHERE RRNUM > (#{pageNum}-1) * #{amount}
+		]]>
+	</select>
+	
+	
+	<select id="freeBoardDetailByNum" resultType="freeBoardDto" parameterType="int">
+		SELECT NUM, TITLE, NAME, TO_CHAR(REGDATE,'YYYY/MM/DD') REGDATE, CONTENT FROM FREEBOARD
+		WHERE NUM=#{num}
+	</select>
+	
+	<select id="freeBoardCount" resultType="int">
+		SELECT COUNT(*) totalCount FROM FREEBOARD
+	</select>
+	
+	<insert id="freeBoardInsertPro" parameterType="freeBoardDto">
+		<selectKey keyProperty="num" resultType="int" order="BEFORE">
+			SELECT FREEBOARDNUM_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO FREEBOARD(NUM, TITLE, NAME, REGDATE, CONTENT)
+		VALUES( #{num}, #{title}, #{name}, SYSDATE, #{content})
+	</insert>
+	
+	<update id="freeBoardUpdate" parameterType="freeBoardDto">
+		UPDATE FREEBOARD SET TITLE = #{title}, CONTENT = #{content} WHERE NUM = #{num}
+	</update>
+	
+	<delete id="freeBoardDelete" parameterType="int">
+		DELETE FROM FREEBOARD WHERE NUM = #{num}
+	</delete>
+</mapper>
